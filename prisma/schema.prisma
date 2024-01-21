@@ -30,5 +30,4 @@ model Author {
   name  String
   novelId String? @db.ObjectId
   Novel Novel? @relation(fields: [novelId], references: [id])
-  
 }
