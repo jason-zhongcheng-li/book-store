@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { GET_NOVELS } from "@/graphql/queries";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { INovel } from "@/typings";
 import { FormEvent, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -17,9 +17,13 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { ADD_NOVEL } from "../graphql/mutations";
+import { Novel } from "./Novel";
 
 export const Novels = () => {
   const { data, loading, error } = useQuery(GET_NOVELS);
+  const [addNovel] = useMutation<z.infer<typeof NovelSchema>>(ADD_NOVEL);
   const [isPending, startTransaction] = useTransition();
 
   const form = useForm<z.infer<typeof NovelSchema>>({
@@ -31,13 +35,11 @@ export const Novels = () => {
   });
 
   if (loading) {
-    return (
-      <p className="text-white flex items-center justify-center">Loading ...</p>
-    );
+    return <p className="flex items-center justify-center">Loading ...</p>;
   }
 
   if (error) {
-    <p className="text-white flex items-center justify-center">
+    <p className="flex items-center justify-center">
       Opps! Something went wrong ...
     </p>;
   }
@@ -45,7 +47,10 @@ export const Novels = () => {
   const novels: INovel[] = data?.novels;
 
   const onSubmit = (values: z.infer<typeof NovelSchema>) => {
-    startTransaction(async () => {});
+    startTransaction(async () => {
+      const { title, image } = values;
+      await addNovel({ variables: { title, image } });
+    });
   };
 
   return (
@@ -90,8 +95,16 @@ export const Novels = () => {
               </FormItem>
             )}
           />
+          <Button type="submit" className="flex mt-8" disabled={isPending}>
+            Add Novel
+          </Button>
         </form>
       </Form>
+      <div className="grid grid-cols-4 gap-2">
+        {novels.map((novel) => (
+          <Novel key={novel.id} novel={novel} />
+        ))}
+      </div>
     </div>
   );
 };

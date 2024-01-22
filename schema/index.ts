@@ -6,6 +6,6 @@ export const UserSchema = z.object({
 });
 
 export const NovelSchema = z.object({
-  title: z.string().email({ message: "Title is required" }),
+  title: z.string().min(1, { message: "Image is required" }),
   image: z.string().min(1, { message: "Image is required" }),
 });
